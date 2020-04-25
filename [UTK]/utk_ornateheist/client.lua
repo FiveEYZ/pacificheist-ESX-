@@ -3,6 +3,7 @@
 ESX = nil
 PoliceDoors = {}
 PlayerData = nil
+local dooropen = false
 UTK = {
     doorchecks = {
         {x = 257.10, y = 220.30, z = 106.28, he = 339.733, h = GetHashKey("hei_v_ilev_bk_gate_pris"), h1 = "hei_v_ilev_bk_gate_pris", h2 = "hei_v_ilev_bk_gate_molten", status = 0},
@@ -33,7 +34,8 @@ UTK = {
     card2 = {x = 252.80, y = 228.55, z = 102.50},
     hack1 = {x = 262.35, y = 223.00, z = 107.05, type = "hei_v_ilev_bk_gate2_pris", h = 249.731},
     hack2 = {x = 252.80, y = 228.55, z = 102.50},
-    vault = {x = 253.92, y = 224.56, z = 101.88, type = "v_ilev_bk_vaultdoor"},
+ --   vault = {x = 253.92, y = 224.56, z = 101.88, type = "v_ilev_bk_vaultdoor"},
+    vault = {x = 254.12, y = 225.50, z = 101.87, type = "v_ilev_bk_vaultdoor"},
     thermal1 = {x = 252.82, y = 221.07, z = 101.60},
     thermal2 = {x = 261.22, y = 215.43, z = 101.68},
     lockpick1 = {x = 252.82, y = 221.07, z = 101.60},
@@ -168,7 +170,7 @@ function UTK:HandleInfo()
                                         self.currentplant = 0
                                         self:Plant()
                                     elseif output ~= true then
-                                        exports["mythic_notify"]:SendAlert("error", output)
+                                        exports["mythic_notify"]:DoHudText("error", output)
                                     end
                                 end, 1)
                             end
@@ -186,7 +188,7 @@ function UTK:HandleInfo()
                                         self.currentpick = 0
                                         self:Lockpick()
                                     elseif output ~= true then
-                                        exports["mythic_notify"]:SendAlert("error", output)
+                                        exports["mythic_notify"]:DoHudText("error", output)
                                     end
                                 end, 2)
                             end
@@ -217,7 +219,7 @@ function UTK:HandleInfo()
                                                 self.currenthack = 0
                                                 self:Hack()
                                             elseif not output then
-                                                exports['mythic_notify']:SendAlert("error", "You don't have a hacker laptop.")
+                                                exports['mythic_notify']:DoHudText("error", "You don't have a hacker laptop.")
                                             end
                                         end, "laptop_h")
                                     end
@@ -236,7 +238,7 @@ function UTK:HandleInfo()
                                                 self.currenthack = 1
                                                 self:Hack()
                                             elseif not output then
-                                                exports['mythic_notify']:SendAlert("error", "You don't have a hacker laptop.")
+                                                exports['mythic_notify']:DoHudText("error", "You don't have a hacker laptop.")
                                             end
                                         end, "laptop_h")
                                     end
@@ -266,7 +268,7 @@ function UTK:HandleInfo()
                                             self.currentid = 1
                                             self:IdCard()
                                         elseif not output then
-                                            exports["mythic_notify"]:SendAlert("error", "You don't have the ID Card.")
+                                            exports["mythic_notify"]:DoHudText("error", "You don't have the ID Card.")
                                         end
                                         end, "id_card")
                                     end
@@ -298,7 +300,7 @@ function UTK:HandleInfo()
                                             self.currentid = 2
                                             self:IdCard()
                                         elseif not output then
-                                            exports["mythic_notify"]:SendAlert("error", "You don't have the ID Card.")
+                                            exports["mythic_notify"]:DoHudText("error", "You don't have the ID Card.")
                                         end
                                         end, "id_card")
                                     end
@@ -333,7 +335,7 @@ function UTK:HandleInfo()
                                                 self.currentplant = 1
                                                 self:Plant()
                                             elseif not output then
-                                                exports['mythic_notify']:SendAlert("error", "You don't have any thermal charges.")
+                                                exports['mythic_notify']:DoHudText("error", "You don't have any thermal charges.")
                                             end
                                         end, "thermal_charge")
                                     end
@@ -352,7 +354,7 @@ function UTK:HandleInfo()
                                                 self.currentplant = 2
                                                 self:Plant()
                                             elseif not output then
-                                                exports['mythic_notify']:SendAlert("error", "You don't have any thermal charges.")
+                                                exports['mythic_notify']:DoHudText("error", "You don't have any thermal charges.")
                                             end
                                         end, "thermal_charge")
                                     end
@@ -384,7 +386,7 @@ function UTK:HandleInfo()
                                                     self.currentpick = 1
                                                     self:Lockpick()
                                                 elseif not output then
-                                                    exports['mythic_notify']:SendAlert("error", "You don't have any lockpicks.")
+                                                    exports['mythic_notify']:DoHudText("error", "You don't have any lockpicks.")
                                                 end
                                             end, "lockpick")
                                         end
@@ -403,7 +405,7 @@ function UTK:HandleInfo()
                                                     self.currentpick = 2
                                                     self:Lockpick()
                                                 elseif not output then
-                                                    exports['mythic_notify']:SendAlert("error", "You don't have any lockpicks.")
+                                                    exports['mythic_notify']:DoHudText("error", "You don't have any lockpicks.")
                                                 end
                                             end, "lockpick")
                                         end
@@ -481,7 +483,7 @@ function UTK:Plant()
     NetworkAddEntityToSynchronisedScene(bag, bagscene, "anim@heists@ornate_bank@thermal_charge", "bag_thermal_charge", 4.0, -8.0, 1)
     SetPedComponentVariation(ped, 5, 0, 0, 0)
     NetworkStartSynchronisedScene(bagscene)
-    exports['progressBars']:startUI(4500, self.text.thermal)
+    exports['pogressBar']:drawBar(4500, self.text.thermal)
     Citizen.Wait(1500)
     local x, y, z = table.unpack(GetEntityCoords(ped))
     local bomba = CreateObject(GetHashKey("hei_prop_heist_thermite"), x, y, z + 0.2,  true,  true, true)
@@ -489,7 +491,7 @@ function UTK:Plant()
     SetEntityCollision(bomba, false, true)
     AttachEntityToEntity(bomba, ped, GetPedBoneIndex(ped, 28422), 0, 0, 0, 0, 0, 200.0, true, true, false, true, 1, true)
     Citizen.Wait(4000)
-    exports['progressBars']:startUI(12000, self.text.burning)
+    exports['pogressBar']:drawBar(12000, self.text.burning)
     DeleteObject(bag)
     SetPedComponentVariation(ped, 5, 45, 0, 0)
     DetachEntity(bomba, 1, 1)
@@ -518,7 +520,7 @@ function UTK:Plant()
     DeleteObject(bomba)
     TriggerServerEvent("utk_oh:moltgate", loc.x, loc.y, loc.z, oldmodel, newmodel)
     Citizen.Wait(9000)
-    exports['mythic_notify']:SendAlert("success", self.text.melted)
+    exports['mythic_notify']:DoHudText("success", self.text.melted)
     StopParticleFxLooped(effect, 0)
     if self.currentplant == 0 then
         --TriggerServerEvent("utk_oh:toggleDoor", newmodel, vector3(self.loudstart.x, self.loudstart.y, self.loudstart.z), false)
@@ -562,16 +564,16 @@ function UTK:Lockpick()
     SetEntityCoords(ped, loc.x, loc.y, loc.z, 1, 0, 0, 1)
     SetEntityHeading(ped, loc.h)
     TaskPlayAnim(ped, animDict, "a_uncuff", 8.0, 8.0, 6000, 1, 1, 0, 0, 0)
-    exports['progressBars']:startUI(6000, self.text.lockpick..": Stage 1")
+    exports['pogressBar']:drawBar(6000, self.text.lockpick..": Stage 1")
     Citizen.Wait(6500)
-    exports['mythic_notify']:SendAlert("success", "Stage 1 "..self.text.stage)
+    exports['mythic_notify']:DoHudText("success", "Stage 1 "..self.text.stage)
     SetEntityCoords(ped, loc.x, loc.y, loc.z, 1, 0, 0, 1)
     SetEntityHeading(ped, loc.h)
     TaskPlayAnim(ped, animDict, "a_uncuff", 8.0, 8.0, 6000, 1, 1, 0, 0, 0)
-    exports['progressBars']:startUI(6000, self.text.lockpick..": Stage 2")
+    exports['pogressBar']:drawBar(6000, self.text.lockpick..": Stage 2")
     Citizen.Wait(6500)
-    exports['mythic_notify']:SendAlert("success", "Stage 2 "..self.text.stage)
-    exports['mythic_notify']:SendAlert("success", self.text.unlocked)
+    exports['mythic_notify']:DoHudText("success", "Stage 2 "..self.text.stage)
+    exports['mythic_notify']:DoHudText("success", self.text.unlocked)
     UTK.disableinput = false
     if self.currentpick == 0 then
         UTK.stage0break = true
@@ -653,7 +655,7 @@ function UTK:Hack()
     NetworkStartSynchronisedScene(netScene2)
     Citizen.Wait(2000)
     Brute()
-    exports["mythic_notify"]:SendAlert("success", "Open My Computer and navigate to HackConnect.exe")
+    exports["mythic_notify"]:DoHudText("success", "Open My Computer and navigate to HackConnect.exe")
     while not UTK.hackfinish do
         Citizen.Wait(1)
     end
@@ -685,11 +687,11 @@ function UTK:IdCard()
     local pedco = GetEntityCoords(PlayerPedId())
     local IdProp = CreateObject(GetHashKey("p_ld_id_card_01"), pedco, true, true, false)
     local boneIndex = GetPedBoneIndex(PlayerPedId(), 28422)
-    local panel = ESX.Game.GetClosestObject(("hei_prop_hei_securitypanel"), pedco)
+    local panel = ESX.Game.GetClosestObject(pedco, ("hei_prop_hei_securitypanel"))
 
     AttachEntityToEntity(IdProp, ped, boneIndex, 0.12, 0.028, 0.001, 10.0, 175.0, 0.0, true, true, false, true, 1, true)
     TaskStartScenarioInPlace(ped, "PROP_HUMAN_ATM", 0, true)
-    exports['progressBars']:startUI(2000, UTK.text.card)
+    exports['pogressBar']:drawBar(2000, UTK.text.card)
     Citizen.Wait(1500)
     AttachEntityToEntity(IdProp, panel, boneIndex, -0.09, -0.02, -0.08, 270.0, 0.0, 270.0, true, true, false, true, 1, true)
     FreezeEntityPosition(IdProp)
@@ -699,19 +701,19 @@ function UTK:IdCard()
     PlaySoundFrontend(-1, "ATM_WINDOW", "HUD_FRONTEND_DEFAULT_SOUNDSET")
     if self.currentid == 1 then
         UTK.disableinput = false
-        exports['mythic_notify']:SendAlert("success", UTK.text.unlocked)
+        exports['mythic_notify']:DoHudText("success", UTK.text.unlocked)
         --TriggerServerEvent("utk_oh:toggleDoor", UTK.hack1.type, vector3(UTK.hack1.x, UTK.hack1.y, UTK.hack1.z), false, UTK.hack1.h)
         TriggerServerEvent("utk_oh:policeDoor", 3, false)
     elseif self.currentid == 2 then
         UTK.stage1break = true
         UTK.disableinput = false
-        exports['progressBars']:startUI(4000, UTK.text.using)
+        exports['pogressBar']:drawBar(4000, UTK.text.using)
         local count = 4
         repeat
             Citizen.Wait(1000)
             count = count - 1
         until count == 0
-        exports['mythic_notify']:SendAlert("success", UTK.text.used)
+        exports['mythic_notify']:DoHudText("success", UTK.text.used)
         SpawnObj()
         TriggerServerEvent("utk_oh:openvault", 1)
         TriggerEvent("utk_oh:vaulttimer", 2)
@@ -883,23 +885,23 @@ function Search(location)
     EnterAnim(vector3(location.coords.x, location.coords.y, location.coords.z))
     Citizen.Wait(1500)
     TaskStartScenarioInPlace(PlayerPedId(), "PROP_HUMAN_BUM_BIN", 0, true)
-    exports['progressBars']:startUI(15000, UTK.text.search)
+    exports['pogressBar']:drawBar(15000, UTK.text.search)
     Citizen.Wait(15000)
     if UTK.searchinfo.random ~= 1 then
         location.status = true
-        exports['mythic_notify']:SendAlert("error", UTK.text.nothing)
+        exports['mythic_notify']:DoHudText("error", UTK.text.nothing)
         UTK.searchinfo.random = math.random(1, UTK.cur - 1)
         UTK.cur = UTK.cur - 1
     else
         UTK.searchinfo.found = true
-        exports['mythic_notify']:SendAlert("success", UTK.text.found)
+        exports['mythic_notify']:DoHudText("success", UTK.text.found)
         TriggerServerEvent("utk_oh:giveidcard")
     end
     ClearPedTasks(PlayerPedId())
     UTK.disableinput = false
 end
 
-function Process(ms, text) exports['progressBars']:startUI(ms, text) Citizen.Wait(ms) end
+function Process(ms, text) exports['pogressBar']:drawBar(ms, text) Citizen.Wait(ms) end
 function DrawText3D(x, y, z, text, scale) local onScreen, _x, _y = World3dToScreen2d(x, y, z) local pX, pY, pZ = table.unpack(GetGameplayCamCoords()) SetTextScale(scale, scale) SetTextFont(4) SetTextProportional(1) SetTextEntry("STRING") SetTextCentre(true) SetTextColour(255, 255, 255, 215) AddTextComponentString(text) DrawText(_x, _y) local factor = (string.len(text)) / 700 DrawRect(_x, _y + 0.0150, 0.095 + factor, 0.03, 41, 11, 41, 100) end
 function ShowVaultTimer() SetTextFont(0) SetTextProportional(0) SetTextScale(0.42, 0.42) SetTextDropShadow(0, 0, 0, 0,255) SetTextEdge(1, 0, 0, 0, 255) SetTextEntry("STRING") AddTextComponentString("~r~"..UTK.vaulttime.."~w~") DrawText(0.682, 0.96) end
 function DisableControl() DisableControlAction(0, 73, false) DisableControlAction(0, 24, true) DisableControlAction(0, 257, true) DisableControlAction(0, 25, true) DisableControlAction(0, 263, true) DisableControlAction(0, 32, true) DisableControlAction(0, 34, true) DisableControlAction(0, 31, true) DisableControlAction(0, 30, true) DisableControlAction(0, 45, true) DisableControlAction(0, 22, true) DisableControlAction(0, 44, true) DisableControlAction(0, 37, true) DisableControlAction(0, 23, true) DisableControlAction(0, 288, true) DisableControlAction(0, 289, true) DisableControlAction(0, 170, true) DisableControlAction(0, 167, true) DisableControlAction(0, 73, true) DisableControlAction(2, 199, true) DisableControlAction(0, 47, true) DisableControlAction(0, 264, true) DisableControlAction(0, 257, true) DisableControlAction(0, 140, true) DisableControlAction(0, 141, true) DisableControlAction(0, 142, true) DisableControlAction(0, 143, true) end
@@ -1060,7 +1062,7 @@ Citizen.CreateThread(function()
                     PushScaleformMovieFunctionParameterFloat(0.0)
                     PopScaleformMovieFunctionVoid()
                     Hacking = true
-                    exports["mythic_notify"]:SendAlert("success", "Find the IP adress...")
+                    exports["mythic_notify"]:DoHudText("success", "Find the IP adress...")
                 elseif program == 83 and not Hacking and Ipfinished then
 
                     PushScaleformMovieFunction(scaleform, "SET_LIVES")
@@ -1077,7 +1079,7 @@ Citizen.CreateThread(function()
                     PopScaleformMovieFunctionVoid()
 
                     Hacking = true
-                    exports["mythic_notify"]:SendAlert("success", "Find the password...")
+                    exports["mythic_notify"]:DoHudText("success", "Find the password...")
                 elseif Hacking and program == 87 then
                     lives = lives - 1
                     PushScaleformMovieFunction(scaleform, "SET_LIVES")
@@ -1095,7 +1097,7 @@ Citizen.CreateThread(function()
                     PopScaleformMovieFunctionVoid()
                     Hacking = false
                     Ipfinished = true
-                    exports["mythic_notify"]:SendAlert("success", "Run BruteForce.exe")
+                    exports["mythic_notify"]:DoHudText("success", "Run BruteForce.exe")
                 elseif Hacking and program == 85 then
                     PlaySoundFrontend(-1, "HACKING_FAILURE", "", false)
                     PushScaleformMovieFunction(scaleform, "CLOSE_APP")
@@ -1121,7 +1123,7 @@ Citizen.CreateThread(function()
                     if UTK.hackmethod == 1 then
                         --TriggerServerEvent("utk_oh:toggleDoor", UTK.hack1.type, vector3(UTK.hack1.x, UTK.hack1.y, UTK.hack1.z), false, UTK.hack1.h)
                         TriggerServerEvent("utk_oh:policeDoor", 3, false)
-                        exports['mythic_notify']:SendAlert("success", UTK.text.hacked)
+                        exports['mythic_notify']:DoHudText("success", UTK.text.hacked)
                         UsingComputer = false
                         UTK.disableinput = false
                         UTK.hackfinish = true
@@ -1133,7 +1135,7 @@ Citizen.CreateThread(function()
                         Process(25000, "System hacking...")
                         TriggerEvent("utk_oh:vaulttimer", 1)
                         TriggerServerEvent("utk_oh:openvault", 1)
-                        exports['mythic_notify']:SendAlert("success", UTK.text.hacked)
+                        exports['mythic_notify']:DoHudText("success", UTK.text.hacked)
                         UTK.disableinput = false
                         UTK.hackfinish = true
                         UTK.info.stage = 2
@@ -1269,9 +1271,9 @@ AddEventHandler("utk_oh:openvault_c", function(method)
 end)
 RegisterNetEvent("utk_oh:vault")
 AddEventHandler("utk_oh:vault", function(method)
-	local obj = ESX.Game.GetClosestObject(UTK.vault.type, vector3(UTK.vault.x, UTK.vault.y, UTK.vault.z))
+	local obj = GetClosestObjectOfType(vector3(UTK.vault.x, UTK.vault.y, UTK.vault.z), 2.5, GetHashKey(UTK.vault.type), false, false, false)
     local count = 0
-
+	
     if method == 1 then
         repeat
 	        local rotation = GetEntityHeading(obj) - 0.05
@@ -1324,7 +1326,7 @@ end)
 RegisterNetEvent("utk_oh:vaulttimer")
 AddEventHandler("utk_oh:vaulttimer", function(method)
     if method == 1 then
-        exports['mythic_notify']:SendAlert("error", "You have 90 seconds until toxic gas comes in.")
+        exports['mythic_notify']:DoHudText("error", "You have 90 seconds until toxic gas comes in.")
         UTK.starttimer = true
         UTK.vaulttime = 90
         Citizen.CreateThread(function()
@@ -1371,10 +1373,10 @@ AddEventHandler("utk_oh:vaulttimer", function(method)
         TriggerServerEvent("utk_oh:alarm_s", 2)
         ESX.TriggerServerCallback("utk_oh:gettotalcash", function(result)
             text = "$"..ESX.Math.GroupDigits(result)
-            exports["mythic_notify"]:SendAlert("success", "You stole "..text)
+            exports["mythic_notify"]:DoHudText("success", "You stole "..text)
         end)
     else
-        exports['mythic_notify']:SendAlert("error", "You have 90 seconds until toxic gas comes in.")
+        exports['mythic_notify']:DoHudText("error", "You have 90 seconds until toxic gas comes in.")
         UTK.starttimer = true
         UTK.vaulttime = 90
         Citizen.CreateThread(function()
@@ -1421,7 +1423,7 @@ AddEventHandler("utk_oh:vaulttimer", function(method)
         TriggerServerEvent("utk_oh:alarm_s", 2)
 		ESX.TriggerServerCallback("utk_oh:gettotalcash", function(result)
             text = "$"..ESX.Math.GroupDigits(result)
-            exports["mythic_notify"]:SendAlert("success", "You stole "..text)
+            exports["mythic_notify"]:DoHudText("success", "You stole "..text)
         end)
     end
 end)
@@ -1429,7 +1431,7 @@ RegisterNetEvent("utk_oh:gas_c")
 AddEventHandler("utk_oh:gas_c", function()
     Citizen.CreateThread(function()
         UTK.begingas = true
-        exports["mythic_notify"]:SendAlert("error", "Vault door will close automatically in 60 seconds!")
+        exports["mythic_notify"]:DoHudText("error", "Vault door will close automatically in 60 seconds!")
         while true do
             Citizen.Wait(1)
             if UTK.begingas then
@@ -1476,7 +1478,7 @@ AddEventHandler("utk_oh:gas_c", function()
 				Citizen.Wait(48000)
                 UTK.stage2break = true
                 UTK.stage4break = true
-                exports["mythic_notify"]:SendAlert("error", "VAULT DOOR CLOSING!")
+                exports["mythic_notify"]:DoHudText("error", "VAULT DOOR CLOSING!")
                 TriggerEvent("utk_oh:vault", 2)
                 TriggerEvent("utk_oh:vaultsound")
                 for k, v in ipairs(UTK.doorchecks) do
@@ -1488,7 +1490,7 @@ AddEventHandler("utk_oh:gas_c", function()
                 if UTK.grabber then
                     ESX.TriggerServerCallback("utk_oh:gettotalcash", function(result)
                         text = "$"..ESX.Math.GroupDigits(result)
-                        exports["mythic_notify"]:SendAlert("success", "You stole "..text)
+                        exports["mythic_notify"]:DoHudText("success", "You stole "..text)
                     end)
                 end
                 return
@@ -1501,7 +1503,7 @@ AddEventHandler("utk_oh:policenotify", function(toggle)
     local player = ESX.GetPlayerData()
     if player.job.name == "police" then
         if toggle == 1 then
-            exports["mythic_notify"]:SendAlert("infrom", "Pacific Standart Bank alarms are triggered!", 10000, {["background-color"] = "#CD472A", ["color"] = "#ffffff"})
+            exports["mythic_notify"]:DoHudText("infrom", "Pacific Standart Bank alarms are triggered!", 10000, {["background-color"] = "#CD472A", ["color"] = "#ffffff"})
             if not DoesBlipExist(UTK.alarmblip) then
                 UTK.alarmblip = AddBlipForCoord(UTK.loudstart.x, UTK.loudstart.y, UTK.loudstart.z)
                 SetBlipSprite(UTK.alarmblip, 161)
